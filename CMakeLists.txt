@@ -6,7 +6,7 @@ if(DEFINED BUILD_SYSTEM)
     set(ROS_VERSION ${BUILD_SYSTEM})
     message(STATUS "ROS_VERSION: ${ROS_VERSION}")
 elseif(DEFINED ENV{ROS_DISTRO})
-    if("$ENV{ROS_DISTRO}" MATCHES "foxy|galactic|humble|iron|rolling")
+    if("$ENV{ROS_DISTRO}" MATCHES "foxy|galactic|humble|iron|jazzy|rolling")
         set(ROS_VERSION "ROS2")
     else()
         set(ROS_VERSION "ROS1")
@@ -216,6 +216,7 @@ elseif(ROS_VERSION STREQUAL "ROS2")
     
     # Find all necessary ROS2 packages
     find_package(ament_cmake REQUIRED)
+    find_package(ament_index_cpp REQUIRED)
     find_package(rclcpp REQUIRED)
     find_package(std_msgs REQUIRED)
     find_package(sensor_msgs REQUIRED)
@@ -229,7 +230,12 @@ elseif(ROS_VERSION STREQUAL "ROS2")
     find_package(tf2_ros REQUIRED)
     find_package(geometry_msgs REQUIRED)
     find_package(tf2_geometry_msgs REQUIRED)
-    
+
+    # Add ROS2 include directories manually for compatibility
+    # In ROS2, packages export their include directories via targets
+    # We need to add the parent include directory
+    include_directories(/opt/ros/$ENV{ROS_DISTRO}/include)
+
     # Create executable
     add_executable(host_sdk_sample 
         src/host_sdk_sample.cpp
@@ -247,10 +253,11 @@ elseif(ROS_VERSION STREQUAL "ROS2")
     
     # Add ROS2 dependencies
     ament_target_dependencies(host_sdk_sample
-        rclcpp 
-        std_msgs 
-        sensor_msgs 
-        nav_msgs 
+        ament_index_cpp
+        rclcpp
+        std_msgs
+        sensor_msgs
+        nav_msgs
         visualization_msgs
         cv_bridge
         image_transport
@@ -346,10 +353,11 @@ elseif(ROS_VERSION STREQUAL "ROS2")
     ament_export_targets(export_${PROJECT_NAME})
     # Declare dependencies
     ament_export_dependencies(
-        rclcpp 
-        std_msgs 
-        sensor_msgs 
-        nav_msgs 
+        ament_index_cpp
+        rclcpp
+        std_msgs
+        sensor_msgs
+        nav_msgs
         visualization_msgs
         cv_bridge
         image_transport

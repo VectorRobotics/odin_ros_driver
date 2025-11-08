@@ -8,7 +8,7 @@ Compatibility:
 
 ● ROS 1(LTS Release: Noetic recommended)
 
-● ROS 2(LTS Release: Humble recommended)
+● ROS 2(LTS Release: Humble recommended, Jazzy supported)
 
 ## Important Notice:
 
@@ -27,6 +27,8 @@ Current Version: v0.6.1
 ● Ubuntu 20.04 for ROS Noetic and ROS2 Foxy;
 
 ● Ubuntu 22.04 for ROS2 Humble;
+
+● Ubuntu 24.04 for ROS2 Jazzy;
 
 ### 2.2 Dependencies
 
@@ -79,6 +81,9 @@ For ROS2 Foxy installation, please refer to:
 For ROS2 Humble installation, please refer to:
 [ROS Humble installation instructions](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html)
 
+For ROS2 Jazzy installation, please refer to:
+[ROS Jazzy installation instructions](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debians.html)
+
 ## 3. Preparation
 
 ### 3.1 Create Udev rules 
@@ -110,10 +115,10 @@ source /opt/ros/noetic/setup.bash
 ./script/build_ros.sh
 ```
 
-#### 3.3.2 ROS2 (Foxy for example):
+#### 3.3.2 ROS2 (Foxy/Humble/Jazzy for example):
 
 ```shell
-source /opt/ros/foxy/setup.bash
+source /opt/ros/foxy/setup.bash  # or /opt/ros/humble/setup.bash or /opt/ros/jazzy/setup.bash
 ./script/build_ros2.sh
 ```
 
@@ -133,7 +138,7 @@ roslaunch odin_ros_driver [launch file]
 ```shell
 roslaunch odin_ros_driver odin1_ros1.launch
 ```
-#### 3.4.2 ROS2 (Foxy for example):
+#### 3.4.2 ROS2 (Foxy/Humble/Jazzy for example):
 
 ```shell
 source [ros2_workspace]/install/setup.bash

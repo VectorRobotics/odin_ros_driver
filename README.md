@@ -1,14 +1,12 @@
 # Odin_ROS_Driver Readme
 
-ROS driver suite for Odin sensor modules (Manifold Tech Ltd.) 
+ROS2 driver suite for Odin sensor modules (Manifold Tech Ltd.)
 
 ## Odin_ROS_Driver
 
 Compatibility:
 
-● ROS 1(LTS Release: Noetic recommended)
-
-● ROS 2(LTS Release: Humble recommended, Jazzy supported)
+● ROS2 (LTS Release: Humble recommended, Jazzy supported, Foxy supported)
 
 ## Important Notice:
 
@@ -22,9 +20,7 @@ Current Version: v0.6.1
 
 ### 2.1 OS Requirement
 
-● Ubuntu 18.04 for ROS Melodic;
-
-● Ubuntu 20.04 for ROS Noetic and ROS2 Foxy;
+● Ubuntu 20.04 for ROS2 Foxy;
 
 ● Ubuntu 22.04 for ROS2 Humble;
 
@@ -68,21 +64,15 @@ sudo apt update
 sudo apt-get install libopencv-dev
 ```
 
-#### 2.3.4 ROS install
-For ROS Melodic installation, please refer to:
-[ROS Melodic installation instructions](https://wiki.ros.org/melodic/Installation)
-
-For ROS Noetic installation, please refer to:
-[ROS Noetic installation instructions](https://wiki.ros.org/noetic/Installation)
-
+#### 2.3.5 ROS2 install
 For ROS2 Foxy installation, please refer to:
-[ROS Foxy installation instructions](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html)
+[ROS2 Foxy installation instructions](https://docs.ros.org/en/foxy/Installation/Ubuntu-Install-Debians.html)
 
 For ROS2 Humble installation, please refer to:
-[ROS Humble installation instructions](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html)
+[ROS2 Humble installation instructions](https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html)
 
 For ROS2 Jazzy installation, please refer to:
-[ROS Jazzy installation instructions](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debians.html)
+[ROS2 Jazzy installation instructions](https://docs.ros.org/en/jazzy/Installation/Ubuntu-Install-Debians.html)
 
 ## 3. Preparation
 
@@ -99,46 +89,21 @@ Reload rules and reinsert devices
 sudo udevadm control --reload
 sudo udevadm trigger
 ```
-### 3.2 OS Requirement
+### 3.2 Clone Repository
 ```shell
-git clone https://github.com/manifoldsdk/odin_ros_driver.git catkin_ws/src/odin_ros_driver
+git clone https://github.com/manifoldsdk/odin_ros_driver.git ros2_ws/src/odin_ros_driver
 ```
 Note:
-Please clone the source code into the "[ros_workspace]/src/" folder, otherwise compilation errors will occur.
+Please clone the source code into the "[ros2_workspace]/src/" folder, otherwise compilation errors will occur.
 
-### 3.3 make
-
-#### 3.3.1 ROS1 (Noetic for example):
-
-```shell
-source /opt/ros/noetic/setup.bash
-./script/build_ros.sh
-```
-
-#### 3.3.2 ROS2 (Foxy/Humble/Jazzy for example):
+### 3.3 Build
 
 ```shell
 source /opt/ros/foxy/setup.bash  # or /opt/ros/humble/setup.bash or /opt/ros/jazzy/setup.bash
-./script/build_ros2.sh
+./script/build.sh
 ```
 
-### 3.4 run:
-
-#### 3.4.1 ROS1 (Noetic for example):
-
-```shell
-source [ros_workspace]/devel/setup.bash
-roslaunch odin_ros_driver [launch file]
-```
-● odin_ros_driver: package name;
-
-● launch file: launch file;
-
-● ros_workspace: User's ROS environment workspace;
-```shell
-roslaunch odin_ros_driver odin1_ros1.launch
-```
-#### 3.4.2 ROS2 (Foxy/Humble/Jazzy for example):
+### 3.4 Run
 
 ```shell
 source [ros2_workspace]/install/setup.bash
@@ -150,9 +115,9 @@ ros2 launch odin_ros_driver [launch file]
 
 ● ros2_workspace: User's ROS2 environment workspace;
 
-ROS2 Demo Launch Instructions:
+Demo Launch Instructions:
 ```shell
-ros2 launch odin_ros_driver odin1_ros2.launch.py
+ros2 launch odin_ros_driver odin1.launch.py
 ```
 
 ### 3.5 Operation Mode:
@@ -167,9 +132,17 @@ Set `custom_map_mode = 0` to enable odometry mode. In this mode, the map frame a
 
 Set `custom_map_mode = 1` to enable slam mode. This mode provides a complete SLAM system that builds upon the Odometry Mode by adding **loop closure detection** and **map saving** capabilities.
 
-After launching the driver, odin1 will automatically perform mapping and cache map data. When the scene capture is complete, users need to execute `./set_param.sh save_map 1` in the driver's source directory to save all map data collected since the program started. The map will be saved to the location specified by the `mapping_result_dest_dir` and `mapping_result_file_name` parameters in config/control_command.yaml. If these parameters are not specified, default values will be used.
+After launching the driver, odin1 will automatically perform mapping and cache map data. When the scene capture is complete, use the ROS2 service to save the map:
 
-After the initial save, you can execute the command again to save a new map. Each save operation will generate a new map file. (Please allow at least 5 seconds between consecutive save operations)
+```bash
+ros2 service call /odin1/save_map std_srvs/srv/Trigger
+```
+
+The service will save all map data collected since the program started. The map will be saved to the location specified by the `mapping_result_dest_dir` and `mapping_result_file_name` parameters in config/control_command.yaml. If these parameters are not specified, a timestamped filename will be used in the log directory.
+
+The service returns a response indicating success or failure with a detailed message. The operation waits up to 30 seconds for the device to complete saving and transferring the map.
+
+After the initial save, you can call the service again to save a new map. Each save operation will generate a new map file. (Please allow at least 5 seconds between consecutive save operations)
 
 The map origin corresponds to the odom coordinate system's origin at the program's startup.
 
@@ -188,16 +161,14 @@ The following topics are published in the odom frame: `/odin1/cloud_slam, /odin1
 ## 4. File structure and data format
 ### 4.1 File structure
 ```shell
-Odin_ROS_Driver/                // ROS1/ROS2 driver package
+Odin_ROS_Driver/                // ROS2 driver package
     3rdparty/                   // Third-party libraries
     src/
         host_sdk_sample.cpp     // Example source code
         yaml_parser.cpp         // Source code for reading yaml parameters
         rawCloudRender.cpp      // Source code for RenderCloud
-        depth_image_ros_node.cpp //depth_image_ros_node
-        depth_image_ros2_node.cpp //depth_image_ros2_node
-        pcd2depth_ros.cpp       //Source code for pcd2depth_ros
-        pcd2depth_ros2.cpp      //Source code for pcd2depth_ros2
+        depth_image_node.cpp    // depth_image_node
+        pcd2depth.cpp           // Source code for pcd2depth
         pointcloud_depth_converter.cpp //Source code for pointcloud_depth_converter
     lib/
         liblydHostApi_amd.a     // Static library for AMD platform
@@ -209,19 +180,15 @@ Odin_ROS_Driver/                // ROS1/ROS2 driver package
         yaml_parser.h           // Parameter file reading header file
         rawCloudRender.h        // API about RenderCloud
         data_logger.h           // LOG about save_data
-        depth_image_ros_node.hpp // depth_image_ros_node
-        depth_image_ros2_node.hpp // depth_image_ros2_node
+        depth_image_node.hpp    // depth_image_node
         pointcloud_depth_converter.hpp // pointcloud_depth_convert
     config/
         control_command.yaml    // Control parameter file for driver
         calib.yaml              // Machine calibration yaml，differ for each individual device. Retrieved from the device everytime it connects to ROS driver
-    launch_ROS1/
-        odin1_ros1.launch       // ROS1 launch file
-    launch_ROS2/
-        odin1_ros2.launch.py    // ROS2 launch file
+    launch/
+        odin1.launch.py         // ROS2 launch file
     script/
-        build_ros1.sh           // Installation script for ROS1
-        build_ros2.sh           // Installation script for ROS2
+        build.sh                // Installation script for ROS2
     recorddata/                 // holds recorded data that can import into MindCloud
     log/                        // holds log files
         Driver_{timestamp}/     // holds all log folders for each time driver started
@@ -231,15 +198,14 @@ Odin_ROS_Driver/                // ROS1/ROS2 driver package
     CMakeLists.txt              // CMake build file
     License                     // License file
 ```
-### 4.2 File structure
+### 4.2 Launch Files
 | Launch File Name         | Description |
 |--------------------------|-------------|
-| odin1_ros1.launch        | Launch file for ROS1 - Odin1 Basic Operations Demo |
-| odin1_ros2.launch.py     | Launch file for ROS2 - Odin1 Basic Operations Demo |
+| odin1.launch.py          | Launch file for ROS2 - Odin1 Basic Operations Demo |
 
 
-### 4.3 ROS topics
-Internal parameters of the Odin ROS driver are defined in config/control_command.yaml. Below are descriptions of the commonly used parameters:
+### 4.3 ROS2 topics
+Internal parameters of the Odin ROS2 driver are defined in config/control_command.yaml. Below are descriptions of the commonly used parameters:
 
 | Topic               |control_command.yaml  | Detailed Description |
 |---------------------|----------------------|----------------------|
@@ -333,21 +299,16 @@ No device connected after 60 seconds
 
 ### 5.2 Library binding failure during compilation
 
-**Error Message**  
+**Error Message**
 ld: cannot find -llydHostApi or symbol lookup errors
 
-**Resolution** 
+**Resolution**
 
 1. Clean previous build artifacts
 
-ROS1 
 ```shell
-rm -rf devel/ build/  
-``` 
-ROS2
-```shell
-rm -rf devel/ install/ log/ 
-``` 
+rm -rf build/ install/ log/
+```
 2. Re-run script installation
 
 ### 5.3 Docker GUI passthrough failure
@@ -400,9 +361,9 @@ ERROR：Missing camera node 'cam_0'
 
 Please plug and unplug the USB again
 
-### 5.8 ROS Driver report device disconnected immediately after stream started
+### 5.8 ROS2 Driver report device disconnected immediately after stream started
 
-**Error Message**  
+**Error Message**
 
 ```shell
 Device ready and streams activated
@@ -413,20 +374,20 @@ Device disconnected, waiting for reconnection...
 
 **Reason**
 
-Mostly common on ros2 environment and connected to complex network environment, such as office wifi & ethernet. ROS2 default to broadcast, and complex network environment will cause ros2 publish to block, leading to device disconnection.
+Mostly common on ROS2 environment when connected to complex network environment, such as office wifi & ethernet. ROS2 defaults to broadcast, and complex network environment will cause ROS2 publish to block, leading to device disconnection.
 
-**Resolution** 
+**Resolution**
 
-If cross-device communication is not required, please restrict ros2 to localhost only with:
+If cross-device communication is not required, please restrict ROS2 to localhost only with:
 ```shell
 export ROS_LOCALHOST_ONLY=1
 ```
 
 If cross-device communication is required, please simplify the network environment as much as possible. Mini local network with only required devices is recommended.
 
-### 5.9 ROS Driver died immediately after stream started
+### 5.9 ROS2 Driver died immediately after stream started
 
-**Error Message**  
+**Error Message**
 
 ```shell
 Device ready and streams activated
@@ -435,9 +396,9 @@ Device ready and streams activated
 
 **Test**
 
-Disable odin1/image	with sendrgb = 0 in control_command.yaml and try again. If the driver now works, it is likely that the issue is related to multiple version of opencv is installed on the system.
+Disable odin1/image with sendrgb = 0 in control_command.yaml and try again. If the driver now works, it is likely that the issue is related to multiple versions of opencv installed on the system.
 
-**Resolution** 
+**Resolution**
 
 Purge the unused version of opencv and maintain a single complete version, then rebuild the driver and try again.
 

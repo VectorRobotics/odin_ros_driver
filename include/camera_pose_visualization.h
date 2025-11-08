@@ -13,19 +13,11 @@ limitations under the License.
 
 #pragma once
 
-#ifdef ROS2
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/color_rgba.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
-#else
-#include <ros/ros.h>
-#include <std_msgs/ColorRGBA.h>
-#include <std_msgs/Header.h>
-#include <visualization_msgs/Marker.h>
-#include <visualization_msgs/MarkerArray.h>
-#endif
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
@@ -43,19 +35,11 @@ class camera_pose_visualization {
     void add_pose(const Eigen::Vector3d& p, const Eigen::Quaterniond& q);
     void reset();
 
-    #ifdef ROS2
     using ColorRGBA = std_msgs::msg::ColorRGBA;
     using Marker = visualization_msgs::msg::Marker;
     using MarkerArray = visualization_msgs::msg::MarkerArray;
     using Header = std_msgs::msg::Header;
     using Publisher = rclcpp::Publisher<MarkerArray>;
-    #else
-    using ColorRGBA = std_msgs::ColorRGBA;
-    using Marker = visualization_msgs::Marker;
-    using MarkerArray = visualization_msgs::MarkerArray;
-    using Header = std_msgs::Header;
-    using Publisher = ros::Publisher;
-    #endif
 
     void publish_by(Publisher& pub, const Header& header);
     void add_edge(const Eigen::Vector3d& p0, const Eigen::Vector3d& p1);

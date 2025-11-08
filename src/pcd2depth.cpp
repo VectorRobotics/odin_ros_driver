@@ -18,7 +18,7 @@ limitations under the License.
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "depth_image_ros2_node.hpp"
+#include "depth_image_node.hpp"
 #include <rcpputils/filesystem_helper.hpp>
 bool fileExists(const std::string& filename) {
     struct stat buffer;
@@ -211,15 +211,15 @@ int main(int argc, char **argv)
         
         depth_node_options.parameter_overrides(params_override);
         
-        RCLCPP_INFO(node->get_logger(), "Parameters successfully prepared for DepthImageRos2Node");
+        RCLCPP_INFO(node->get_logger(), "Parameters successfully prepared for DepthImageNode");
     }
     catch (const std::exception& e) {
-        RCLCPP_ERROR(node->get_logger(), "Error preparing parameters for DepthImageRos2Node: %s", e.what());
+        RCLCPP_ERROR(node->get_logger(), "Error preparing parameters for DepthImageNode: %s", e.what());
         return 1;
     }
     try 
     {
-        auto depth_node = std::make_shared<DepthImageRos2Node>(depth_node_options);
+        auto depth_node = std::make_shared<DepthImageNode>(depth_node_options);
         
         depth_node->initialize();
         

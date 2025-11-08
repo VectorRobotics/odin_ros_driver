@@ -41,17 +41,17 @@ clean_workspace() {
 
 # Run node function
 run_node() {
-    echo -e "${YELLOW}Running ROS2 node${NC}"
-    
+    echo -e "${YELLOW}Running node${NC}"
+
     # Check if environment file exists
     if [ ! -f "${WORKSPACE_ROOT}/install/setup.bash" ]; then
-        echo -e "${RED}Could not find install/setup.bash, please build the project with ./build_ros2.sh first${NC}"
+        echo -e "${RED}Could not find install/setup.bash, please build the project with ./build.sh first${NC}"
         return 1
     fi
-    
+
     # Source environment and run node
     source "${WORKSPACE_ROOT}/install/setup.bash"
-    
+
 }
 
 # Build workspace function
@@ -61,9 +61,8 @@ build_workspace() {
     echo "  Source directory: ${WORKSPACE_SRC}"
     echo "  Package directory: ${PKG_DIR}"
     echo "  Directory name: ${PACKAGE_DIR_NAME}"
-    echo "  ROS version: ROS2"
-    
-    echo -e "${YELLOW}Starting ROS2 project build...${NC}"
+
+    echo -e "${YELLOW}Starting project build...${NC}"
 
     cd $WS_DIR
     rm -rf build install log
@@ -80,20 +79,15 @@ build_workspace() {
         echo -e "${RED}Could not find ROS2 setup.bash file. Please ensure ROS2 is installed.${NC}"
         return 1
     fi
-    
-    # Create temporary package.xml
-    if [ -f "${PKG_DIR}/package_ros2.xml" ]; then
-        echo "Creating temporary package.xml (using package_ros2.xml)"
-        cp "${PKG_DIR}/package_ros2.xml" "${PKG_DIR}/package.xml"
-        TEMP_PACKAGE=true
-    elif [ -f "${PKG_DIR}/package.xml" ]; then
+
+    # Verify package.xml exists
+    if [ -f "${PKG_DIR}/package.xml" ]; then
          echo "Using existing package.xml"
-        TEMP_PACKAGE=false
     else
         echo -e "${RED}Could not find package.xml in package directory${NC}"
         return 1
     fi
-    
+
     # Extract package name from package.xml
     PACKAGE_NAME=$(get_package_name "${PKG_DIR}/package.xml")
     if [ -z "$PACKAGE_NAME" ]; then
@@ -101,40 +95,36 @@ build_workspace() {
         return 1
     fi
     echo "  Package name: ${PACKAGE_NAME}"
-    
-    # Set build system variable
-    export BUILD_SYSTEM=ROS2
-    
+
     # Switch to workspace root and build
     cd "${WORKSPACE_ROOT}" || return 1
-    
+
     # Build with correct package name
     colcon build \
         --packages-select "${PACKAGE_NAME}" \
         --parallel-workers $(nproc) \
         --cmake-args \
-            -DBUILD_SYSTEM=ROS2 \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-    
+
     BUILD_RESULT=$?
-    
+
     # If build successful, source environment
     if [[ $BUILD_RESULT -eq 0 ]]; then
-        echo -e "${GREEN}ROS2 build successful, loading environment: source install/setup.bash${NC}"
+        echo -e "${GREEN}Build successful, loading environment: source install/setup.bash${NC}"
         source "${WORKSPACE_ROOT}/install/setup.bash"
-        
+
     else
-        echo -e "${RED}ROS2 build failed, please check error logs${NC}"
+        echo -e "${RED}Build failed, please check error logs${NC}"
     fi
-    
+
 }
 
 # Help function
 show_help() {
     echo -e "${YELLOW}Usage:${NC}"
-    echo "  ./build_ros2.sh          # Build project"
-    echo "  ./build_ros2.sh -c       # Clean build artifacts"
-    echo "  ./build_ros2.sh -h       # Show help information"
+    echo "  ./build.sh          # Build project"
+    echo "  ./build.sh -c       # Clean build artifacts"
+    echo "  ./build.sh -h       # Show help information"
     echo ""
     echo -e "${YELLOW}Current configuration:${NC}"
     echo "  Project name: ${PROJECT_NAME}"

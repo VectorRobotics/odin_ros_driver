@@ -22,11 +22,7 @@ const Eigen::Vector3d camera_pose_visualization::lt1 = Eigen::Vector3d(-0.7, -0.
 const Eigen::Vector3d camera_pose_visualization::lt2 = Eigen::Vector3d(-1.0, -0.2, 1.0);
 const Eigen::Vector3d camera_pose_visualization::oc = Eigen::Vector3d(0.0, 0.0, 0.0);
 
-#ifdef ROS2
 using GeometryPoint = geometry_msgs::msg::Point;
-#else
-using GeometryPoint = geometry_msgs::Point;
-#endif
 
 void Eigen2Point(const Eigen::Vector3d& v, GeometryPoint& p) {
     p.x = v.x();
@@ -71,13 +67,8 @@ void camera_pose_visualization::add_edge(const Eigen::Vector3d& p0, const Eigen:
 
     marker.ns = m_marker_ns;
     marker.id = m_markers.size() + 1;
-#ifdef ROS2
     marker.type = Marker::LINE_LIST;
     marker.action = Marker::ADD;
-#else
-    marker.type = visualization_msgs::Marker::LINE_LIST;
-    marker.action = visualization_msgs::Marker::ADD;
-#endif
     marker.scale.x = 0.005;
 
     marker.color.g = 1.0f;
@@ -99,13 +90,8 @@ void camera_pose_visualization::add_loopedge(const Eigen::Vector3d& p0, const Ei
 
     marker.ns = m_marker_ns;
     marker.id = m_markers.size() + 1;
-#ifdef ROS2
     marker.type = Marker::LINE_LIST;
     marker.action = Marker::ADD;
-#else
-    marker.type = visualization_msgs::Marker::LINE_LIST;
-    marker.action = visualization_msgs::Marker::ADD;
-#endif
     marker.scale.x = 0.04;
     //marker.scale.x = 0.3;
 
@@ -130,13 +116,8 @@ void camera_pose_visualization::add_pose(const Eigen::Vector3d& p, const Eigen::
 
     marker.ns = m_marker_ns;
     marker.id = m_markers.size() + 1;
-#ifdef ROS2
     marker.type = Marker::LINE_STRIP;
     marker.action = Marker::ADD;
-#else
-    marker.type = visualization_msgs::Marker::LINE_STRIP;
-    marker.action = visualization_msgs::Marker::ADD;
-#endif
     marker.scale.x = m_line_width;
 
     marker.pose.position.x = 0.0;

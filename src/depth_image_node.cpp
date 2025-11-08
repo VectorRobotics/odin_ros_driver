@@ -11,11 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-#include "depth_image_ros2_node.hpp"
+#include "depth_image_node.hpp"
 #include <functional>
 
-DepthImageRos2Node::DepthImageRos2Node(const rclcpp::NodeOptions & options)
-    : Node("depth_image_ros2_node", options)
+DepthImageNode::DepthImageNode(const rclcpp::NodeOptions & options)
+    : Node("depth_image_node", options)
 {
     PointCloudToDepthConverter::CameraParams camera_params = loadCameraParams();
 
@@ -35,24 +35,24 @@ DepthImageRos2Node::DepthImageRos2Node(const rclcpp::NodeOptions & options)
                        << "\n  depth_cloud_topic: " << depth_cloud_topic_);
 }
 
-void DepthImageRos2Node::initialize()
+void DepthImageNode::initialize()
 {
     cloud_sub_.subscribe(this, cloud_raw_topic_);
     color_compressed_sub_.subscribe(this, color_compressed_topic_);
     color_sub_.subscribe(this, color_raw_topic_);
 
     sync_ = std::make_shared<Sync>(MySyncPolicy(10), cloud_sub_, color_sub_);
-    sync_->registerCallback(std::bind(&DepthImageRos2Node::syncCallback, this, 
+    sync_->registerCallback(std::bind(&DepthImageNode::syncCallback, this, 
                                      std::placeholders::_1, std::placeholders::_2));
 
     it_ = std::make_shared<image_transport::ImageTransport>(shared_from_this());
     depth_image_pub_ = it_->advertise(depth_image_topic_, 1);
     depth_cloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(depth_cloud_topic_, 1);
 
-    RCLCPP_INFO(this->get_logger(), "DepthImageRos2Node initialized successfully");
+    RCLCPP_INFO(this->get_logger(), "DepthImageNode initialized successfully");
 }
 
-PointCloudToDepthConverter::CameraParams DepthImageRos2Node::loadCameraParams()
+PointCloudToDepthConverter::CameraParams DepthImageNode::loadCameraParams()
 {
     PointCloudToDepthConverter::CameraParams params;
 
@@ -109,7 +109,7 @@ PointCloudToDepthConverter::CameraParams DepthImageRos2Node::loadCameraParams()
     return params;
 }
 
-void DepthImageRos2Node::syncCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr cloud_msg,
+void DepthImageNode::syncCallback(const sensor_msgs::msg::PointCloud2::ConstSharedPtr cloud_msg,
                                      // const sensor_msgs::msg::CompressedImage::ConstSharedPtr image_msg,
                                      const sensor_msgs::msg::Image::ConstSharedPtr color_msg)
 {
@@ -151,7 +151,7 @@ void DepthImageRos2Node::syncCallback(const sensor_msgs::msg::PointCloud2::Const
     publishDepthCloud(result.colored_cloud, cloud_msg->header);
 }
 
-void DepthImageRos2Node::publishDepthImage(const cv::Mat &img,
+void DepthImageNode::publishDepthImage(const cv::Mat &img,
                                           const std_msgs::msg::Header &header,
                                           const std::string &encoding)
 {
@@ -159,7 +159,7 @@ void DepthImageRos2Node::publishDepthImage(const cv::Mat &img,
     depth_image_pub_.publish(*depth_msg);
 }
 
-void DepthImageRos2Node::publishDepthCloud(const pcl::PointCloud<pcl::PointXYZRGB> &colored_cloud,
+void DepthImageNode::publishDepthCloud(const pcl::PointCloud<pcl::PointXYZRGB> &colored_cloud,
                                           const std_msgs::msg::Header &header)
 {
     if (!colored_cloud.points.empty())

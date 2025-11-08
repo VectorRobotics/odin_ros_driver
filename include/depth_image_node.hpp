@@ -37,10 +37,10 @@ limitations under the License.
 #include <string>
 #include <memory>
 
-class DepthImageRos2Node : public rclcpp::Node
+class DepthImageNode : public rclcpp::Node
 {
 public:
-    explicit DepthImageRos2Node(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+    explicit DepthImageNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
     void initialize();
 

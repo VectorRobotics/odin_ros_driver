@@ -69,11 +69,13 @@ ros2 service call /odin1/save_map std_srvs/srv/Trigger
 ```
 The service will:
 - Send the save command to the device
-- Wait for the device to complete saving (up to 30 seconds)
-- Transfer the map file to your computer
+- Poll device status every 1 second (up to 30 seconds)
+- Automatically transfer the map file when ready
 - Return success/failure with detailed message
 
 Map saves to path specified by `mapping_result_dest_dir` and `mapping_result_file_name` in config. If not specified, defaults to timestamped filename in the log directory.
+
+**Note**: Requires updated firmware. Old firmware will fail with "Failed to check save_map status" error.
 
 ### Topic Control
 Enable/disable topics via config flags:

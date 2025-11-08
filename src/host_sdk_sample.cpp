@@ -269,8 +269,6 @@ static void signal_handler(int signum) {
     }
 }
 
-// Custom parameter monitoring function (legacy method)
-// NOTE: lidar_get_custom_parameter for save_map always fails - this never actually worked
 static void custom_parameter_monitor() {
     int last_save_map_val = -1;
     while (g_param_monitor_running && deviceConnected) {
@@ -355,26 +353,26 @@ void MultiSensorPublisher::handleSaveMapRequest(
 
     RCLCPP_INFO(node_->get_logger(), "Save map command sent to device, waiting for completion...");
 
-    // Poll device until save_map completes (value goes from 1 to 0)
+    // Poll device until save_map completes
     const int max_wait_seconds = 30;
-    const int poll_interval_ms = 500;
-    int attempts = (max_wait_seconds * 1000) / poll_interval_ms;
+    int last_save_map_val = -1;
 
-    for (int i = 0; i < attempts; i++) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(poll_interval_ms));
+    for (int elapsed = 0; elapsed < max_wait_seconds; elapsed++) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        int current_value = 1;
+        int current_value = 0;
         result = lidar_get_custom_parameter(odinDevice, "save_map", &current_value);
 
         if (result != 0) {
             response->success = false;
-            response->message = "Failed to check save_map status, error: " + std::to_string(result);
-            RCLCPP_ERROR(node_->get_logger(), "Failed to get save_map parameter, error: %d", result);
+            response->message = "Failed to check save_map status, error: " + std::to_string(result) +
+                               ". Ensure firmware is up to date.";
+            RCLCPP_ERROR(node_->get_logger(), "Failed to get save_map parameter, error: %d (firmware issue?)", result);
             return;
         }
 
-        // Map save complete when value transitions from 1 to 0
-        if (current_value == 0) {
+        // Map save complete when value transitions from 1 to 0 (exactly as original)
+        if (last_save_map_val == 1 && current_value == 0) {
             // Determine map save path
             auto now = std::chrono::system_clock::now();
             std::time_t t = std::chrono::system_clock::to_time_t(now);
@@ -406,6 +404,7 @@ void MultiSensorPublisher::handleSaveMapRequest(
             }
             return;
         }
+        last_save_map_val = current_value;
     }
 
     // Timeout

@@ -138,11 +138,17 @@ After launching the driver, odin1 will automatically perform mapping and cache m
 ros2 service call /odin1/save_map std_srvs/srv/Trigger
 ```
 
-The service will save all map data collected since the program started. The map will be saved to the location specified by the `mapping_result_dest_dir` and `mapping_result_file_name` parameters in config/control_command.yaml. If these parameters are not specified, a timestamped filename will be used in the log directory.
+The service will:
+- Send the save command to the device
+- Poll device status every 1 second to check completion
+- Automatically transfer the map when the device signals ready
+- Return success or failure with a detailed message
 
-The service returns a response indicating success or failure with a detailed message. The operation waits up to 30 seconds for the device to complete saving and transferring the map.
+The map will be saved to the location specified by the `mapping_result_dest_dir` and `mapping_result_file_name` parameters in config/control_command.yaml. If these parameters are not specified, a timestamped filename will be used in the log directory.
 
 After the initial save, you can call the service again to save a new map. Each save operation will generate a new map file. (Please allow at least 5 seconds between consecutive save operations)
+
+**Important**: This feature requires updated Odin firmware. Old firmware does not support the status checking API and will fail.
 
 The map origin corresponds to the odom coordinate system's origin at the program's startup.
 
